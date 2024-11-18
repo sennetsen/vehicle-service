@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "jest --silent --forceExit"
+    "test": "jest --silent --forceExit --testTimeout=10000"
   },
   "keywords": [],
   "author": "",

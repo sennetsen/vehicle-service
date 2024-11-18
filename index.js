@@ -94,19 +94,14 @@ app.post('/vehicle', async (req, res) => {
   }
 });
 
-app.get('/vehicle/{:vin}', async (req, res) => {
-  const errors = validate(req.params.body);
-  if (errors) {
-    return res.status(422).json({ errors });
-  }
-
+app.get('/vehicle/:vin', async (req, res) => {
   const { vin } = req.params;
-  if (!vehicle.description || typeof vehicle.description !== 'string') {
-    return res.status(400).json({ error: 'Description is required and must be a string' });
+  if (!vin || typeof vin !== 'string') {
+    return res.status(400).json({ error: 'VIN is required and must be a string' });
   }
 
   try {
-    const result = await pool.query('SELECT * FROM vehicle WHERE vin = $1', [req.params.vin]);
+    const result = await pool.query('SELECT * FROM vehicle WHERE vin = $1', [vin]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -116,9 +111,9 @@ app.get('/vehicle/{:vin}', async (req, res) => {
   catch (err) {
     res.status(500).json({ error: 'An error occurred retrieving the vehicle.' });
   }
-})
+});
 
-app.put('/vehicle/{:vin}', async (req, res) => {
+app.put('/vehicle/:vin', async (req, res) => {
   const errors = validate(req.body);
   if (errors) {
     return res.status(422).json({ errors });
@@ -144,7 +139,7 @@ app.put('/vehicle/{:vin}', async (req, res) => {
   }
 });
 
-app.delete('/vehicle/{:vin}', async (req, res) => {
+app.delete('/vehicle/:vin', async (req, res) => {
   const { vin } = req.params;
 
   try {
