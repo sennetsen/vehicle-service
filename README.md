@@ -28,8 +28,10 @@ DB_PASSWORD=your_postgres_password
 DB_PORT=5432
 ```
 
-4. Create a PostgreSQL database and run the following SQL query to create the vehicle table:
+4. Create a PostgreSQL database as follows, and run the following SQL query to create the vehicle table:
 ```sql
+CREATE DATABASE vehicle_service;
+
 CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TABLE vehicle (
