@@ -12,7 +12,7 @@ A RESTful API service for managing vehicle data using Node.js, Express, and Post
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/sennet-sen/vehicle-service.git
+git clone https://github.com/sennetsen/vehicle-service.git
 ```
 
 2. Install the necessary dependencies (based on the entities listed in package.json):
@@ -46,6 +46,8 @@ CREATE TABLE vehicle (
     model_year INTEGER NOT NULL,
     purchase_price DECIMAL(1000, 2) NOT NULL,
     fuel_type VARCHAR NOT NULL
+    color VARCHAR
+    category VARCHAR
 );
 ```
 
@@ -73,6 +75,9 @@ To run the test suite, run the following command in the terminal:
 ```bash
 npm test
 ```
+![Test Suite](tests/test_list.png "Test Suite")
+
+
 
 ## Vehicle Service API Endpoints
 
