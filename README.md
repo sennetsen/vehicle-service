@@ -46,8 +46,6 @@ CREATE TABLE vehicle (
     model_year INTEGER NOT NULL,
     purchase_price DECIMAL(1000, 2) NOT NULL,
     fuel_type VARCHAR NOT NULL
-    color VARCHAR
-    category VARCHAR
 );
 ```
 
