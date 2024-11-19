@@ -12,6 +12,7 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
+// Initialize PostgreSQL connection pool
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -20,29 +21,48 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
+// Validation function for vehicle data records
 const validate = (vehicle) => {
   const errors = {};
+  
   if (!vehicle.vin || typeof vehicle.vin !== 'string') {
     errors.vin = 'VIN is required and must be a string';
   }
-  if (!vehicle.manufacturer_name || typeof vehicle.manufacturer_name !== 'string') {
+  
+  if (!vehicle.manufacturer_name || 
+      typeof vehicle.manufacturer_name !== 'string') {
     errors.manufacturer_name = 'Manufacturer name is required and must be a string';
   }
+  
   if (!vehicle.description || typeof vehicle.description !== 'string') {
     errors.description = 'Description is required and must be a string';
   }
-  if (!vehicle.horse_power || !Number.isInteger(vehicle.horse_power) || vehicle.horse_power < 0) {
-    errors.horse_power = 'Horsepower is required and must be an integer greater than or equal to 0';
+  
+  if (!vehicle.horse_power || 
+      !Number.isInteger(vehicle.horse_power) || 
+      vehicle.horse_power < 0) {
+    errors.horse_power = 
+      'Horsepower is required and must be an integer greater than or equal to 0';
   }
+  
   if (!vehicle.model_name || typeof vehicle.model_name !== 'string') {
     errors.model_name = 'Model name is required and must be a string';
   }
-  if (!vehicle.model_year || typeof vehicle.model_year !== 'number' || vehicle.model_year < 0) {
-    errors.model_year = 'Model year is required and must be an integer greater than or equal to 0';
+  
+  if (!vehicle.model_year || 
+      typeof vehicle.model_year !== 'number' || 
+      vehicle.model_year < 0) {
+    errors.model_year = 
+      'Model year is required and must be an integer greater than or equal to 0';
   }
-  if (!vehicle.purchase_price || typeof vehicle.purchase_price !== 'number' || vehicle.purchase_price < 0) {
-    errors.purchase_price = 'Purchase price is required and must be a number greater than or equal to 0';
+  
+  if (!vehicle.purchase_price || 
+      typeof vehicle.purchase_price !== 'number' || 
+      vehicle.purchase_price < 0) {
+    errors.purchase_price = 
+      'Purchase price is required and must be a number greater than or equal to 0';
   }
+  
   if (!vehicle.fuel_type || typeof vehicle.fuel_type !== 'string') {
     errors.fuel_type = 'Fuel type is required and must be a string';
   }
@@ -52,10 +72,12 @@ const validate = (vehicle) => {
 
 app.use(bodyParser.json());
 
+// Error handling for malformed JSON requests (SyntaxErrors)
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: 'Malformed JSON request.' });
+    return res.status(400).json({ error: 'This JSON request is malformed.' });
   }
+  next();
 });
 
 
@@ -79,11 +101,25 @@ app.post('/vehicle', async (req, res) => {
     return res.status(422).json({ errors });
   }
 
-  const { vin, manufacturer_name, description, horse_power, model_name, model_year, purchase_price, fuel_type } = req.body;
+  const {
+    vin,
+    manufacturer_name,
+    description, 
+    horse_power,
+    model_name,
+    model_year,
+    purchase_price,
+    fuel_type
+  } = req.body;
+
   try {
     const result = await pool.query(
-      'INSERT INTO Vehicle (vin, manufacturer_name, description, horse_power, model_name, model_year, purchase_price, fuel_type) VALUES ($1, $2, $3, $4::integer, $5, $6::integer, $7::decimal, $8) RETURNING *',
-      [vin, manufacturer_name, description, horse_power, model_name, model_year, purchase_price, fuel_type]
+      'INSERT INTO Vehicle (vin, manufacturer_name, description, horse_power, ' +
+      'model_name, model_year, purchase_price, fuel_type) ' +
+      'VALUES ($1, $2, $3, $4::integer, $5, $6::integer, $7::decimal, $8) ' + 
+      'RETURNING *',
+      [vin, manufacturer_name, description, horse_power, model_name, model_year,
+       purchase_price, fuel_type]
     );
 
     res.status(201).json(result.rows[0]);
@@ -119,12 +155,23 @@ app.put('/vehicle/:vin', async (req, res) => {
   }
 
   const { vin } = req.params;
-  const { manufacturer_name, description, horse_power, model_name, model_year, purchase_price, fuel_type } = req.body;
+  const { 
+    manufacturer_name, 
+    description, 
+    horse_power, 
+    model_name, 
+    model_year, 
+    purchase_price, 
+    fuel_type 
+  } = req.body;
 
   try {
     const result = await pool.query(
-      'UPDATE vehicle SET manufacturer_name = $1, description = $2, horse_power = $3, model_name = $4, model_year = $5, purchase_price = $6, fuel_type = $7 WHERE vin = $8 RETURNING *',
-      [manufacturer_name, description, horse_power, model_name, model_year, purchase_price, fuel_type, vin]
+      'UPDATE vehicle SET manufacturer_name = $1, description = $2, ' +
+      'horse_power = $3::integer, model_name = $4, model_year = $5::integer, ' +
+      'purchase_price = $6::decimal, fuel_type = $7 WHERE vin = $8 RETURNING *',
+      [manufacturer_name, description, horse_power, model_name, model_year, 
+       purchase_price, fuel_type, vin]
     );
 
     if (result.rows.length === 0) {
@@ -146,6 +193,7 @@ app.delete('/vehicle/:vin', async (req, res) => {
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
+    res.status(204).send();
   }
   catch (err) {
     res.status(500).json({ error: 'An error occurred deleting the vehicle.' });

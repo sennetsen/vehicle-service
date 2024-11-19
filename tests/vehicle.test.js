@@ -1,3 +1,11 @@
+/** This file contains the tests for the Vehicle Service API. 
+  * The tests are written with the Jest testing framework, and the 
+  * Supertest library is used to test these HTTP requests.
+  * All tests initialize the database before each test, and clear the 
+  * database of all records after all tests are complete so that each test 
+  * does not interfere with the results of another test.
+  */
+
 const request = require('supertest');
 const app = require('../index');
 const { Pool } = require('pg');
@@ -10,8 +18,8 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// Set of test vehicles of varying vins, manufacturers, models, years, horsepower, 
-// technologies,and prices
+/* Set of test vehicles of varying vins, manufacturers, models, years, 
+  horsepower, purchase prices, and fuel types. */
 const toyota_corolla = {
   vin: '1A2B3C4D5E6F7G8H9',
   manufacturer_name: 'Toyota',
@@ -21,6 +29,17 @@ const toyota_corolla = {
   model_year: 2022,
   purchase_price: 20000.08,
   fuel_type: 'Gasoline',
+};
+
+const toyota_prius = {
+  vin: '7890AB',
+  manufacturer_name: 'Toyota',
+  description: 'Hybrid car',
+  horse_power: 120,
+  model_name: 'Prius',
+  model_year: 2006,
+  purchase_price: 25000.0,
+  fuel_type: 'Hybrid',
 };
 
 const bmw_x5 = {
@@ -45,17 +64,17 @@ const tesla_model_s = {
   fuel_type: 'Electric',
 };
 
-const toyota_prius = {
-  vin: '7890AB',
-  manufacturer_name: 'Toyota',
-  description: 'Hybrid car',
-  horse_power: 120,
-  model_name: 'Prius',
-  model_year: 2006,
-  purchase_price: 25000.0,
-  fuel_type: 'Hybrid',
+const broken_audi = {
+  vin: '123456',
+  manufacturer_name: 'Audi',
+  description: 'Gasoline car',
+  horse_power: 400,
+  model_name: 'A4',
+  model_year: 2023,  
+  purchase_price: -70.12,
 };
 
+// Clear the vehicle table in the database before each test
 async function clearVehicles() {
   try {
     await pool.query('DELETE FROM vehicle');
@@ -66,10 +85,12 @@ async function clearVehicles() {
 }
 
 describe('Vehicle Service API', () => {
+  // Clear the vehicle table in the database before each test
   beforeEach(async () => {
     await clearVehicles();
   });
 
+  // Clear the database of all vehicle records after all tests are complete
   afterAll(async () => {
     await clearVehicles();
     await pool.end();
@@ -127,6 +148,61 @@ describe('Vehicle Service API', () => {
     const get_res = await request(app).get(`/vehicle/${bmw_x5.vin}`);
     expect(get_res.status).toBe(200);
     expect(get_res.body).toEqual(updatedVehicle);
+  });
+
+  // Test 5: DELETE /vehicle/:vin should delete a vehicle and return a success message
+  it('should delete a vehicle and return a success message', async () => {
+    // Send a Tesla Model S to the database
+    await request(app).post('/vehicle').send(tesla_model_s);
+
+    const deleteRes = await request(app).delete(`/vehicle/${tesla_model_s.vin}`);
+    expect(deleteRes.status).toBe(204);
+
+    // Check that the vehicle was correctly deleted from the database
+    const getRes = await request(app).get(`/vehicle/${tesla_model_s.vin}`);
+    expect(getRes.status).toBe(404);
+  });
+
+  // Test 6: DELETE /vehicle/:vin should return a 404 error if the vehicle is not found
+  it('should return a 404 error if the vehicle is not found', async () => {
+    // Send a Tesla Model S and a Toyota Prius to the database
+    await request(app).post('/vehicle').send(tesla_model_s);
+    await request(app).post('/vehicle').send(toyota_prius);
+      
+    // Attempt to delete a vehicle that does not exist currently in the database
+    const res = await request(app).delete(`/vehicle/${toyota_corolla.vin}`);
+    expect(res.status).toBe(404);
+  });
+
+  // Test 7: POST /vehicle should return a 422 error if the vehicle is missing required fields
+  it('should return a 422 error if the vehicle is missing a required field', async () => {
+    // Send a broken Audi vehicle record to the database
+    const res = await request(app).post('/vehicle').send(broken_audi);
+    expect(res.status).toBe(422);
+    expect(res.body).toEqual({
+      errors: {
+        fuel_type: 'Fuel type is required and must be a string',
+        purchase_price: 'Purchase price is required and must be a number greater than or equal to 0'
+      }
+    });
+  });
+
+  // Test 8: PUT /vehicle/:vin should return a 422 error (validation error) if the vehicle is missing required fields
+  it('should return a 422 error if the vehicle is missing required fields', async () => {
+    // Send a broken Audi vehicle record to the database
+    const res = await request(app).put(`/vehicle/${broken_audi.vin}`).send(broken_audi);
+    expect(res.status).toBe(422);
+  });
+
+  // Test 9: Error handling for malformed JSON requests (SyntaxErrors)
+  it('should return a 400 error if the request body is malformed JSON', async () => {
+    // Send a malformed JSON request
+    const malformedJSON = "{ 'vin': '123ABC', 'manufacturer_name':: 'Toyota' ";
+    const res = await request(app)
+      .post('/vehicle')
+      .set('Content-Type', 'application/json')
+      .send(malformedJSON);
+    expect(res.status).toBe(400);
   });
 
 });
