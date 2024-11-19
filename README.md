@@ -8,7 +8,7 @@ A RESTful API service for managing vehicle data using Node.js, Express, and Post
 - PostgreSQL (v12 or higher)
 - npm (Node Package Manager)
 
-## How to setup
+## How to set up
 
 1. Clone the repository:
 ```bash
@@ -20,6 +20,7 @@ git clone https://github.com/sennet-sen/vehicle-service.git
 npm install
 ```
 - Install homebrew (if not already installed) at https://brew.sh/
+- Install Node.js using homebrew: `brew install node`
 - Install PostgreSQL using homebrew: `brew install postgresql` OR download from https://www.postgresql.org/download/
 - If using homebrew: start PostgreSQL service: `brew services start postgresql`
 - Run `psql -U postgres` to access the psql shell. This will open a new shell to be used for initializing the database.
@@ -66,7 +67,7 @@ To run the test suite, run the following command in the terminal:
 npm test
 ```
 
-## Vehicle ServiceAPI Endpoints
+## Vehicle Service API Endpoints
 
 ### GET /vehicle
 Returns a list of all vehicles in the database.
