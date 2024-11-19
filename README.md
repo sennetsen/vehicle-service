@@ -26,10 +26,15 @@ npm install
 - Run `psql -U postgres` to access the psql shell. This will open a new shell to be used for initializing the database.
 
 
-3. Now create the PostgreSQL database as follows in the psql shell, and run the following SQL query to create the vehicle table:
+3. Create the PostgreSQL database as follows in the psql shell:
 ```sql
 CREATE DATABASE vehicle_service;
+```
 
+4. Press `\q` to exit the psql shell. Now run `psql -U postgres -d vehicle_service` to access the vehicle_service database.
+
+5. Create the vehicle table in the vehicle_service database:
+```sql
 CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TABLE vehicle (
@@ -44,7 +49,9 @@ CREATE TABLE vehicle (
 );
 ```
 
-4. Create a `.env` file in the project directory with the following environment variables:
+6. Press `\q` to exit the psql shell.
+
+7. Create a `.env` file in the project directory with the following environment variables by running `nano .env`:
 ```bash
 DB_USER=postgres
 DB_HOST=localhost
@@ -52,10 +59,10 @@ DB_NAME=vehicle_service
 DB_PASSWORD=your_password
 DB_PORT=5432
 ```
-- Note: the default username and password for PostgreSQL is `postgres`.
+- Note: the default username and password for PostgreSQL is usually `postgres`.
 
 
-5. Now the server is ready to start. Start it with the following command:
+8. Now the server is ready to start. Start it with the following command:
 ```bash
 npm start
 ```
