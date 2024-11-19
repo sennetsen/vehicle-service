@@ -218,7 +218,15 @@ describe('Vehicle Service API', () => {
     });
   });
 
-  // Test 10: POST should return a 400 error if the request body is malformed JSON
+  // Test 10: PUT /vehicle/:vin should return a 404 error if the vehicle is not found
+  it('PUT should return a 404 error if the vehicle is not found', async () => {
+    // Try to update a nonexistent Toyota Corolla
+    const res = await request(app).put(`/vehicle/${toyota_corolla.vin}`).send(toyota_corolla);
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'Vehicle not found.' });
+  });
+
+  // Test 11: POST should return a 400 error if the request body is malformed JSON
   it('POST should return a 400 error if the request body is malformed JSON', async () => {
     // Send a malformed JSON request
     const malformedJSON = "{ 'vin': 'ADdsbf8, 'manufacturer_name':: 'Toyota' ";
@@ -230,7 +238,7 @@ describe('Vehicle Service API', () => {
     expect(res.body).toEqual({ error: 'This JSON request is malformed.' });
   });
 
-  // Test 11: PUT should return a 400 error if the request body is malformed JSON
+  // Test 12: PUT should return a 400 error if the request body is malformed JSON
   it('PUT updating a vehicle should return a 400 error if the request body is malformed JSON', async () => {
     // Send a BMW X5 to the database
     await request(app).post('/vehicle').send(bmw_x5);
@@ -244,7 +252,7 @@ describe('Vehicle Service API', () => {
     expect(res.body).toEqual({ error: 'This JSON request is malformed.' });
   });
 
-  // Test 12: POST should return a 500 error when trying to insert two identical vehicles with the same VIN
+  // Test 13: POST should return a 500 error when trying to insert two identical vehicles with the same VIN
   it('POST should return a 500 error when trying to insert a vehicle with a duplicate VIN', async () => {
     const firstRes = await request(app).post('/vehicle').send(tesla_model_s);
     expect(firstRes.status).toBe(201);
