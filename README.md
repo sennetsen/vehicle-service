@@ -24,6 +24,7 @@ npm install
 - If using homebrew: start PostgreSQL service: `brew services start postgresql`
 - Run `psql -U postgres` to access the psql shell. This will open a new shell to be used for initializing the database.
 
+
 3. Now create the PostgreSQL database as follows in the psql shell, and run the following SQL query to create the vehicle table:
 ```sql
 CREATE DATABASE vehicle_service;
@@ -52,6 +53,7 @@ DB_PORT=5432
 ```
 - Note: the default username and password for PostgreSQL is `postgres`.
 
+
 5. Now the server is ready to start. Start it with the following command:
 ```bash
 npm start
@@ -74,7 +76,7 @@ Returns a specific vehicle by searching for its VIN.
 
 ### POST /vehicle
 Creates a new vehicle object. Required fields include:
-- vin (string)
+- vin (case-insensitive string)
 - manufacturer_name (string)
 - description (string)
 - horse_power (integer)
@@ -83,10 +85,10 @@ Creates a new vehicle object. Required fields include:
 - purchase_price (decimal)
 - fuel_type (string)
 
-### PUT /vehicle/{vin}
+### PUT /vehicle/{:vin}
 Updates an existing vehicle. It requires the same fields as POST.
 
-### DELETE /vehicle/{vin}
+### DELETE /vehicle/{:vin}
 Deletes a vehicle by searching for its VIN.
 
 ## Error Handling

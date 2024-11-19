@@ -3,7 +3,8 @@
   * Supertest library is used to test these HTTP requests.
   * All tests initialize the database before each test, and clear the 
   * database of all records after all tests are complete so that each test 
-  * does not interfere with the results of another test.
+  * does not interfere with the results of another test and achieves full
+  * coverage.
   */
 
 const request = require('supertest');
@@ -70,7 +71,7 @@ const broken_audi = {
   description: 'Gasoline car',
   horse_power: 400,
   model_name: 'A4',
-  model_year: 2023,  
+  model_year: 2023,
   purchase_price: -70.12,
 };
 
@@ -146,15 +147,15 @@ describe('Vehicle Service API', () => {
     await request(app).post('/vehicle').send(bmw_x5);
 
     const updatedVehicle = {
-        ...bmw_x5,
-        manufacturer_name: 'Honda',
-        model_name: 'CRV',
-        description: 'Luxury SUV',
-        horse_power: 200,
-        purchase_price: 37234.13
+      ...bmw_x5,
+      manufacturer_name: 'Honda',
+      model_name: 'CRV',
+      description: 'Luxury SUV',
+      horse_power: 200,
+      purchase_price: 37234.13
     };
 
-    const res = await request(app).put(`/vehicle/${bmw_x5 .vin}`).send(updatedVehicle);
+    const res = await request(app).put(`/vehicle/${bmw_x5.vin}`).send(updatedVehicle);
     expect(res.status).toBe(200);
     expect(res.body).toEqual(updatedVehicle);
 
@@ -184,7 +185,7 @@ describe('Vehicle Service API', () => {
     // Send a Tesla Model S and a Toyota Prius to the database
     await request(app).post('/vehicle').send(tesla_model_s);
     await request(app).post('/vehicle').send(toyota_prius);
-      
+
     // Attempt to delete a vehicle that does not exist currently in the database
     const res = await request(app).delete(`/vehicle/${toyota_corolla.vin}`);
     expect(res.status).toBe(404);
@@ -242,5 +243,23 @@ describe('Vehicle Service API', () => {
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ error: 'This JSON request is malformed.' });
   });
-});
 
+  // Test 12: POST should return a 500 error when trying to insert two identical vehicles with the same VIN
+  it('POST should return a 500 error when trying to insert a vehicle with a duplicate VIN', async () => {
+    const firstRes = await request(app).post('/vehicle').send(tesla_model_s);
+    expect(firstRes.status).toBe(201);
+    expect(firstRes.body).toEqual(tesla_model_s);
+
+    // A different vehicle but the same VIN
+    const duplicateVinVehicle = {
+      ...bmw_x5,
+      vin: tesla_model_s.vin
+    };
+
+    const secondRes = await request(app).post('/vehicle').send(duplicateVinVehicle);
+    expect(secondRes.status).toBe(500);
+    expect(secondRes.body).toEqual({
+      error: 'An error occurred creating the vehicle.'
+    });
+  });
+});
