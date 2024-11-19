@@ -19,16 +19,12 @@ git clone https://github.com/sennet-sen/vehicle-service.git
 ```bash
 npm install
 ```
-3. Create a `.env` file in the project directory with the following environment variables:
-```bash
-DB_USER=your_postgres_username
-DB_HOST=localhost
-DB_NAME=your_database_name
-DB_PASSWORD=your_postgres_password
-DB_PORT=5432
-```
+- Install homebrew (if not already installed) at https://brew.sh/
+- Install PostgreSQL using homebrew: `brew install postgresql` OR download from https://www.postgresql.org/download/
+- If using homebrew: start PostgreSQL service: `brew services start postgresql`
+- Run `psql -U postgres` to access the psql shell. This will open a new shell to be used for initializing the database.
 
-4. Create a PostgreSQL database as follows, and run the following SQL query to create the vehicle table:
+3. Now create the PostgreSQL database as follows in the psql shell, and run the following SQL query to create the vehicle table:
 ```sql
 CREATE DATABASE vehicle_service;
 
@@ -46,9 +42,26 @@ CREATE TABLE vehicle (
 );
 ```
 
+4. Create a `.env` file in the project directory with the following environment variables:
+```bash
+DB_USER=postgres
+DB_HOST=localhost
+DB_NAME=vehicle_service
+DB_PASSWORD=your_password
+DB_PORT=5432
+```
+- Note: the default username and password for PostgreSQL is `postgres`.
+
 5. Now the server is ready to start. Start it with the following command:
 ```bash
 npm start
+```
+
+## Running Tests via Jest and Supertest in the Command Line
+
+To run the test suite, run the following command in the terminal:
+```bash
+npm test
 ```
 
 ## Vehicle ServiceAPI Endpoints
@@ -75,13 +88,6 @@ Updates an existing vehicle. It requires the same fields as POST.
 
 ### DELETE /vehicle/{vin}
 Deletes a vehicle by searching for its VIN.
-
-## Running Tests via Jest and Supertest in the Command Line
-
-To run the test suite, run the following command in the terminal:
-```bash
-npm test
-```
 
 ## Error Handling
 

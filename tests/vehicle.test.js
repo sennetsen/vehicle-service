@@ -97,14 +97,28 @@ describe('Vehicle Service API', () => {
   });
 
   // Test 1: GET /vehicle should return an empty list of vehicles
-  it('should return a list of vehicles in JSON format', async () => {
+  it('GET should return an empty list of vehicles in JSON format', async () => {
     const res = await request(app).get('/vehicle');
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
 
-  // Test 2: POST /vehicle should add a new vehicle and return it
-  it('should add a new vehicle and return it', async () => {
+  // Test 2: GET /vehicle should return a list of multiple vehicles in JSON format
+  it('GET should return a list of multiple vehicles in JSON format', async () => {
+    // Send a Toyota Corolla, a Toyota Prius, a Tesla Model S, and a BMW X5 
+    // to the database
+    await request(app).post('/vehicle').send(toyota_corolla);
+    await request(app).post('/vehicle').send(toyota_prius);
+    await request(app).post('/vehicle').send(tesla_model_s);
+    await request(app).post('/vehicle').send(bmw_x5);
+
+    const res = await request(app).get('/vehicle');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([toyota_corolla, toyota_prius, tesla_model_s, bmw_x5]);
+  });
+
+  // Test 3: POST /vehicle should add a new vehicle and return it
+  it('POST should add a new vehicle and return it', async () => {
     // Send a Toyota Corolla to the database
     const res = await request(app).post('/vehicle').send(toyota_corolla);
     expect(res.status).toBe(201);
@@ -112,8 +126,8 @@ describe('Vehicle Service API', () => {
     expect(res.body).toEqual(toyota_corolla);
   });
 
-  // Test 3: GET /vehicle/:vin should return a vehicle by vin
-  it('should return a vehicle by vin', async () => {
+  // Test 4: GET /vehicle/:vin should return a vehicle by vin
+  it('GET should return a vehicle by vin', async () => {
     // Request a Toyota Corolla from the database
     await request(app).post('/vehicle').send(toyota_corolla);
     const res = await request(app).get(`/vehicle/${toyota_corolla.vin}`);
@@ -121,8 +135,8 @@ describe('Vehicle Service API', () => {
     expect(res.body).toEqual(toyota_corolla);
   });
 
-  // Test 4: PUT /vehicle/:vin should update a vehicle and return its updated vehicle object
-  it('should update a vehicle and return the updated vehicle object', async () => {
+  // Test 5: PUT /vehicle/:vin should update a vehicle and return its updated vehicle object
+  it('PUT should update a vehicle and return the updated vehicle object', async () => {
     const new_manufacturer_name = 'Honda';
     const new_description = 'Updated description';
     const new_horse_power = 200;
@@ -150,21 +164,23 @@ describe('Vehicle Service API', () => {
     expect(get_res.body).toEqual(updatedVehicle);
   });
 
-  // Test 5: DELETE /vehicle/:vin should delete a vehicle and return a success message
-  it('should delete a vehicle and return a success message', async () => {
+  // Test 6: DELETE /vehicle/:vin should delete a vehicle and return a success message
+  it('DELETE should delete a vehicle and return a success message', async () => {
     // Send a Tesla Model S to the database
     await request(app).post('/vehicle').send(tesla_model_s);
 
     const deleteRes = await request(app).delete(`/vehicle/${tesla_model_s.vin}`);
     expect(deleteRes.status).toBe(204);
+    expect(deleteRes.text).toEqual('');
 
     // Check that the vehicle was correctly deleted from the database
     const getRes = await request(app).get(`/vehicle/${tesla_model_s.vin}`);
     expect(getRes.status).toBe(404);
+    expect(getRes.body).toEqual({ error: 'Vehicle not found.' });
   });
 
-  // Test 6: DELETE /vehicle/:vin should return a 404 error if the vehicle is not found
-  it('should return a 404 error if the vehicle is not found', async () => {
+  // Test 7: DELETE /vehicle/:vin should return a 404 error if the vehicle is not found
+  it('DELETE should return a 404 error if the vehicle is not found', async () => {
     // Send a Tesla Model S and a Toyota Prius to the database
     await request(app).post('/vehicle').send(tesla_model_s);
     await request(app).post('/vehicle').send(toyota_prius);
@@ -172,10 +188,11 @@ describe('Vehicle Service API', () => {
     // Attempt to delete a vehicle that does not exist currently in the database
     const res = await request(app).delete(`/vehicle/${toyota_corolla.vin}`);
     expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'Vehicle not found.' });
   });
 
-  // Test 7: POST /vehicle should return a 422 error if the vehicle is missing required fields
-  it('should return a 422 error if the vehicle is missing a required field', async () => {
+  // Test 8: POST /vehicle should return a 422 error if the vehicle is missing required fields
+  it('POST should return a 422 error if the vehicle is missing a required field', async () => {
     // Send a broken Audi vehicle record to the database
     const res = await request(app).post('/vehicle').send(broken_audi);
     expect(res.status).toBe(422);
@@ -187,23 +204,43 @@ describe('Vehicle Service API', () => {
     });
   });
 
-  // Test 8: PUT /vehicle/:vin should return a 422 error (validation error) if the vehicle is missing required fields
-  it('should return a 422 error if the vehicle is missing required fields', async () => {
+  // Test 9: PUT /vehicle/:vin should return a 422 error (validation error) if the vehicle is missing required fields
+  it('PUT should return a 422 error if the vehicle is missing required fields', async () => {
     // Send a broken Audi vehicle record to the database
     const res = await request(app).put(`/vehicle/${broken_audi.vin}`).send(broken_audi);
     expect(res.status).toBe(422);
+    expect(res.body).toEqual({
+      errors: {
+        fuel_type: 'Fuel type is required and must be a string',
+        purchase_price: 'Purchase price is required and must be a number greater than or equal to 0'
+      }
+    });
   });
 
-  // Test 9: Error handling for malformed JSON requests (SyntaxErrors)
-  it('should return a 400 error if the request body is malformed JSON', async () => {
+  // Test 10: POST should return a 400 error if the request body is malformed JSON
+  it('POST should return a 400 error if the request body is malformed JSON', async () => {
     // Send a malformed JSON request
-    const malformedJSON = "{ 'vin': '123ABC', 'manufacturer_name':: 'Toyota' ";
+    const malformedJSON = "{ 'vin': 'ADdsbf8, 'manufacturer_name':: 'Toyota' ";
     const res = await request(app)
       .post('/vehicle')
       .set('Content-Type', 'application/json')
       .send(malformedJSON);
     expect(res.status).toBe(400);
+    expect(res.body).toEqual({ error: 'This JSON request is malformed.' });
   });
 
+  // Test 11: PUT should return a 400 error if the request body is malformed JSON
+  it('PUT updating a vehicle should return a 400 error if the request body is malformed JSON', async () => {
+    // Send a BMW X5 to the database
+    await request(app).post('/vehicle').send(bmw_x5);
+    // Send a malformed JSON request
+    const malformedJSON = " vin, 'aadb87HU, 'manufacturer_name':::  ";
+    const res = await request(app)
+      .put(`/vehicle/${bmw_x5.vin}`)
+      .set('Content-Type', 'application/json')
+      .send(malformedJSON);
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ error: 'This JSON request is malformed.' });
+  });
 });
 

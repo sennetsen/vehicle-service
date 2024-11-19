@@ -138,7 +138,7 @@ app.get('/vehicle/:vin', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM vehicle WHERE vin = $1', [vin]);
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Vehicle not found' });
+      return res.status(404).json({ error: 'Vehicle not found.' });
     }
 
     res.status(200).json(result.rows[0]);
@@ -175,7 +175,7 @@ app.put('/vehicle/:vin', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Vehicle not found' });
+      return res.status(404).json({ error: 'Vehicle not found.' });
     }
 
     res.status(200).json(result.rows[0]);
@@ -191,7 +191,7 @@ app.delete('/vehicle/:vin', async (req, res) => {
   try {
     const result = await pool.query('DELETE FROM vehicle WHERE vin = $1', [vin]);
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Vehicle not found' });
+      return res.status(404).json({ error: 'Vehicle not found.' });
     }
     res.status(204).send();
   }
@@ -200,8 +200,6 @@ app.delete('/vehicle/:vin', async (req, res) => {
   }
 });
 
-
-
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Vehicle Service server is running on http://localhost:${PORT}`);
@@ -209,5 +207,3 @@ if (require.main === module) {
 }
 
 module.exports = app;
-
-
