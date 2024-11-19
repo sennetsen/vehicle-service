@@ -51,16 +51,16 @@ CREATE TABLE vehicle (
 npm start
 ```
 
-## API Endpoints
+## Vehicle ServiceAPI Endpoints
 
 ### GET /vehicle
-Returns a list of all vehicles.
+Returns a list of all vehicles in the database.
 
 ### GET /vehicle/{vin}
-Returns a specific vehicle by VIN.
+Returns a specific vehicle by searching for its VIN.
 
 ### POST /vehicle
-Creates a new vehicle. Required fields:
+Creates a new vehicle object. Required fields include:
 - vin (string)
 - manufacturer_name (string)
 - description (string)
@@ -74,21 +74,21 @@ Creates a new vehicle. Required fields:
 Updates an existing vehicle. It requires the same fields as POST.
 
 ### DELETE /vehicle/{vin}
-Deletes a vehicle by VIN.
+Deletes a vehicle by searching for its VIN.
 
-## Running Tests
+## Running Tests via Jest and Supertest in the Command Line
 
-To run the test suite:
+To run the test suite, run the following command in the terminal:
 ```bash
 npm test
 ```
 
 ## Error Handling
 
-The API returns appropriate HTTP status codes:
+The API returns the following HTTP status codes, as appropriate:
 - 200: Success
 - 201: Vehicle object created
 - 400: Bad/misformed request
 - 404: Vehicle object not found
 - 422: Validation error
-- 500: Server error
+- 500: Internal server error
